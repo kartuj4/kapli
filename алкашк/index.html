@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>калькулятор капель</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('C:/Users/Admin/Desktop/алкашк/фон.png'); /* Путь к вашему фоновому изображению */
+            background-size: cover; /* Покрывает весь фон */
+            background-position: center; /* Центрирует изображение */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333; /* Цвет текста, который будет виден на фоне */
+    }
+    .container {
+        text-align: center;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    label, select, input {
+        display: block;
+        margin: 10px auto;
+        width: 80%;
+        max-width: 300px;
+    }
+    .button, .remove-btn {
+        display: inline-block;
+        margin: 10px;
+    }
+    .button {
+        background-color: #228B22;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+    }
+    .remove-btn {
+        background-color: #8B0000;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    .result {
+        margin-top: 20px;
+    }
+    .drink {
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .droplet-visualization {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    .droplet {
+        width: 50px;
+        height: auto;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>калькулятор капель</h1>
+
+        <label for="gender">пол:</label>
+        <select id="gender">
+            <option value="male">мен</option>
+            <option value="female">вумен</option>
+        </select>
+
+        <label for="weight">вес (кг):</label>
+        <input type="number" id="weight" placeholder="введите вес в кг">
+
+        <div id="drinks">
+            <div class="drink" id="drink1">
+                <label for="volume1">объем напитка 1 (мл):</label>
+                <input type="number" id="volume1" placeholder="введите объем">
+                
+                <label for="strength1">крепость напитка 1 (%):</label>
+                <input type="number" id="strength1" placeholder="введите крепость">
+                
+                <button class="remove-btn" onclick="removeDrink('drink1')">удалить напиток</button>
+            </div>
+        </div>
+
+        <button class="button" onclick="addDrink()">добавить ещё напиток</button>
+
+        <label for="snack">Хавка:</label>
+        <select id="snack">
+            <option value="0">ничего</option>
+            <option value="0.1">немного</option>
+            <option value="0.2">покушал!!</option>
+        </select>
+
+        <label for="hours">сколько часов прошло после пьянки?</label>
+        <input type="number" id="hours" placeholder="введите количество часов">
+
+        <button class="button" onclick="calculateBAC()">рассчитать капли и промилле</button>
+
+        <div class="result" id="result"></div>
+
+        <div class="droplet-visualization" id="droplet-visualization">
+            <img class="droplet" src="C:/Users/Admin/Desktop/алкашк/пустая.png" alt="Капля">
+            <img class="droplet" src="C:/Users/Admin/Desktop/алкашк/пустая.png" alt="Капля">
+            <img class="droplet" src="C:/Users/Admin/Desktop/алкашк/пустая.png" alt="Капля">
+            <img class="droplet" src="C:/Users/Admin/Desktop/алкашк/пустая.png" alt="Капля">
+            <img class="droplet" src="C:/Users/Admin/Desktop/алкашк/пустая.png" alt="Капля">
+        </div>
+    </div>
+</body>
+
+    <script>
+        let drinkCount = 1;
+
+        function addDrink() {
+            drinkCount++;
+            const drinkDiv = document.createElement('div');
+            drinkDiv.className = 'drink';
+            drinkDiv.id = `drink${drinkCount}`;
+            drinkDiv.innerHTML = `
+                <label for="volume${drinkCount}">объем напитка ${drinkCount} (мл):</label>
+                <input type="number" id="volume${drinkCount}" placeholder="введите объем">
+                <label for="strength${drinkCount}">крепость напитка ${drinkCount} (%):</label>
+                <input type="number" id="strength${drinkCount}" placeholder="введите крепость">
+                <button class="remove-btn" onclick="removeDrink('drink${drinkCount}')">удалить напиток</button>
+            `;
+            document.getElementById('drinks').appendChild(drinkDiv);
+        }
+
+        function removeDrink(id) {
+            const drinkDiv = document.getElementById(id);
+            drinkDiv.remove();
+        }
+
+
+    function updateDropletVisualization(bac) {
+        const dropletImages = [
+            'C:/Users/Admin/Desktop/алкашк/пустая.png',      // 0 капель
+            'C:/Users/Admin/Desktop/алкашк/25.png',    // 0.25 капли
+            'C:/Users/Admin/Desktop/алкашк/50.png',       // 0.5 капли
+            'C:/Users/Admin/Desktop/алкашк/75.png', // 0.75 капли
+            'C:/Users/Admin/Desktop/алкашк/полная.png'        // 1 капля
+        ];
+        const dropletElements = document.querySelectorAll('.droplet');
+
+        // Установка капель в зависимости от BAC
+        if (bac === 0) {
+            dropletElements[0].src = dropletImages[0];
+            dropletElements[1].src = dropletImages[0];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.2) {
+            dropletElements[0].src = dropletImages[1];
+            dropletElements[1].src = dropletImages[0];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.3) {
+            dropletElements[0].src = dropletImages[2];
+            dropletElements[1].src = dropletImages[0];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.59) {
+            dropletElements[0].src = dropletImages[3];
+            dropletElements[1].src = dropletImages[0];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.7) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[0];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.8) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[1];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 0.9) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[2];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 1.0) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[3];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 1.1) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[0];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 1.24) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[1];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 1.49) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[2];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 2.0) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[3];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 2.1) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[0];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 2.25) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[1];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 2.49) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[2];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 2.9) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[3];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 3.0) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[4];
+            dropletElements[4].src = dropletImages[0];
+        } else if (bac <= 3.5) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[4];
+            dropletElements[4].src = dropletImages[1];
+        } else if (bac <= 4.0) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[4];
+            dropletElements[4].src = dropletImages[2];
+        } else if (bac <= 4.9) {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[4];
+            dropletElements[4].src = dropletImages[3];
+        } else {
+            dropletElements[0].src = dropletImages[4];
+            dropletElements[1].src = dropletImages[4];
+            dropletElements[2].src = dropletImages[4];
+            dropletElements[3].src = dropletImages[4];
+            dropletElements[4].src = dropletImages[4];
+        }
+    }
+
+
+            const dropletImages = [
+                'C:/Users/Admin/Desktop/алкашк/пустая.png',      // 0 капель
+                'C:/Users/Admin/Desktop/алкашк/25.png',    // 0.25 капли
+                'C:/Users/Admin/Desktop/алкашк/50.png',       // 0.5 капли
+                'C:/Users/Admin/Desktop/алкашк/75.png', // 0.75 капли
+                'C:/Users/Admin/Desktop/алкашк/полная.png'        // 1 капля
+            ];
+            const dropletElements = document.querySelectorAll('.droplet');
+
+            const totalDroplets = 5;
+            const fullDroplets = Math.floor(bac);
+            const remainder = bac - fullDroplets;
+            let remainingDroplets = totalDroplets;
+
+            for (let i = 0; i < fullDroplets && i < totalDroplets; i++) {
+                dropletElements[i].src = dropletImages[4];
+                remainingDroplets--;
+            }
+
+            if (remainingDroplets > 0 && remainder > 0) {
+                let partialIndex = 0;
+                if (remainder >= 0.75) {
+                    partialIndex = 3;
+                } else if (remainder >= 0.5) {
+                    partialIndex = 2;
+                } else if (remainder >= 0.25) {
+                    partialIndex = 1;
+                }
+                dropletElements[fullDroplets].src = dropletImages[partialIndex];
+                remainingDroplets--;
+            }
+
+            for (let i = fullDroplets + 1; i < totalDroplets; i++) {
+                dropletElements[i].src = dropletImages[0];
+            }
+        
+
+            function calculateBAC() {
+    const gender = document.getElementById('gender').value;
+    const weight = parseFloat(document.getElementById('weight').value);
+    const snack = parseFloat(document.getElementById('snack').value);
+    const hours = parseFloat(document.getElementById('hours').value);
+
+    let r;
+    if (gender === 'male') {
+        r = 0.68;
+    } else if (gender === 'female') {
+        r = 0.55;
+    }
+
+    let totalAlcohol = 0;
+
+    // Рассчитываем общее количество алкоголя для всех напитков
+    for (let i = 1; i <= drinkCount; i++) {
+        const volumeElement = document.getElementById(`volume${i}`);
+        const strengthElement = document.getElementById(`strength${i}`);
+        
+        if (volumeElement && strengthElement) {
+            const volume = parseFloat(volumeElement.value) || 0;
+            const strength = parseFloat(strengthElement.value) || 0;
+            totalAlcohol += volume * (strength / 100) * 0.789;  // Рассчитываем чистый алкоголь для каждого напитка
+        }
+    }
+
+    // Коррекция на прием пищи
+    let F = 1;  // Если не ел
+    if (snack === 'small') {
+        F = 0.85;  // Ел немного
+    } else if (snack === 'full') {
+        F = 0.7;  // Хорошо поел
+    }
+
+    // Вычисляем начальное значение BAC
+    let bac = (totalAlcohol * F) / (r * weight);
+
+    // Корректируем BAC с учётом времени, прошедшего после употребления алкоголя
+    const beta = 0.15;  // Скорость метаболизма алкоголя в ‰ в час
+    bac -= beta * hours;
+
+    // Если результат отрицательный, устанавливаем его на 0
+    bac = Math.max(bac, 0);
+
+
+
+            let classification = '';
+            if (bac === 0) classification = '0 капель! на твоём месте я бы вязалась за разлив';
+            else if (bac <= 0.2) classification = '0.25 капель! ну ты че...';
+            else if (bac <= 0.3) classification = '0.5 капель! вперёд к свершениям';
+            else if (bac <= 0.59) classification = '0.75 капель! ты когда успел протрезветь?';
+            else if (bac <= 0.7) classification = '1 капля! мало бро!!!';
+            else if (bac <= 0.8) classification = '1.25 капель! щовел!';
+            else if (bac <= 0.9) classification = '1.5 капель! время перекура';
+            else if (bac <= 1.0) classification = '1.75 капель! юху?';
+            else if (bac <= 1.1) classification = '2 капли! ровненько ты конечно';
+            else if (bac <= 1.24) classification = '2.25 капель! с каждым глотком ты ближе к смерти!';
+            else if (bac <= 1.49) classification = '2.50 капель! жиза';
+            else if (bac <= 2.0) classification = '2.75 капель! ксксскскс';
+            else if (bac <= 2.1) classification = '3 капель! самый сок';
+            else if (bac <= 2.25) classification = '3.25 капель! бывшему не пиши';
+            else if (bac <= 2.49) classification = '3.50 капель! проблюй...';
+            else if (bac <= 2.9) classification = '3.75 капель! ПОРА ДОМОЙ';
+            else if (bac <= 3.0) classification = '4 капель! ТОЧНО ДОМОЙ';
+            else if (bac <= 3.5) classification = '4.25 капель! ты жив????';
+            else if (bac <= 4.0) classification = '4.50 капель! ещё секунду и ты в слюнях и в морг';
+            else if (bac <= 4.9) classification = '4.75 капель! скорую)))!!!???';
+            else classification = '5 капель! вы как ввели это, вы уже мертвы типа';
+
+            updateDropletVisualization(bac);
+
+            document.getElementById('result').innerHTML = `концентрация алкоголя в крови: ${bac.toFixed(3)} промилле<br>${classification}`;
+        }
+    </script>
+</body>
+</html>
